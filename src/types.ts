@@ -37,6 +37,19 @@ export type Card = CardBase &
     | { type: "stat"; value: string; label: string; en?: string }
     | { type: "term"; term: string; en?: string; definition: string }
     | { type: "cta"; title: string; sub?: string }
+    | {
+        type: "image";
+        /** 相對於 job 資料夾的透明 PNG，例如 assets/implant.png */
+        src: string;
+        /** 佔畫面短邊的比例，預設 0.5 */
+        size?: number;
+        caption?: string;
+        en?: string;
+        /** 給 nano-banana 字卡模式的提示詞（還沒產圖時顯示在佔位框裡） */
+        prompt?: string;
+        /** 由 calculateMetadata 填入：檔案還不存在 */
+        missing?: boolean;
+      }
   );
 
 export type Theme = {

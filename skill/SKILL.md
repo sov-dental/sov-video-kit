@@ -54,8 +54,19 @@ npm run prep -- "<影片完整路徑>" --name <英文短名> [--theme sov|sunlig
 | `stat` | 數字（療程月數、時數、價格） | `value`（如「22 小時」）、`label`、`en` |
 | `term` | 專業術語解釋 | `term`、`en`、`definition`（≤30 字，取自講者說法） |
 | `cta` | 結尾行動呼籲 | `title`、`sub` |
+| `image` | 講到具體的東西（植體、牙套、維持器、牙齒狀態）時跳出插圖 | `src`（`assets/英文檔名.png`）、`prompt`、`caption`（選填）、`en`、`size`（佔畫面短邊比例，預設 0.5） |
 
 共用選填：`duration`（秒，預設 3.5，建議 2.5–5）、`position`（`top`／`middle`／`bottom`，預設 `top`）、`align`（`left`／`center`／`right`）。
+
+### 圖片卡（插圖）
+
+插圖由使用者用 **nano-banana 字卡模式**產生（https://nano-banana-api-195z.onrender.com/ ，勾「字卡模式」會輸出透明 PNG）。你負責規劃：
+
+1. 在 `cards.json` 寫好 `image` 卡，`src` 用還不存在的檔名（如 `assets/implant.png`），`prompt` 寫一段可以直接貼進字卡模式的提示詞（單一物件、卡通貼紙風、品牌色）。
+2. 回報時列出「要產的圖」：檔名＋提示詞，並請使用者把 PNG 存成那個檔名放進 `jobs/<名稱>/assets/`。想跟過往衛教圖同風格，可在 nano-banana 素材庫點一張當參考。
+3. 圖還沒到之前，`still` 和 `render --draft` 會顯示虛線佔位框；正式 `render` 會擋下並列出缺哪幾張。
+
+PNG 的透明邊會自動裁掉，比例選哪個都可以。原則：每支影片 1–3 張就好、只畫物件不畫人臉；**不要放病患照片或治療前後對照**。
 
 原則：
 - 每 10–15 秒最多一張，**時間不可重疊**；講者沒講的內容不要加，不要加療效保證類字眼。
@@ -83,6 +94,7 @@ npm run render -- <名稱>
 - 剪輯前後長度（`job.json` 的 `cut`）
 - 改了哪些辨識錯誤（列出重要的幾個）、有哪些詞不確定
 - 圖卡清單（時間＋內容）
+- 要產的插圖（檔名＋提示詞），沒有就略過
 - 成品路徑
 
 ## 常見問題

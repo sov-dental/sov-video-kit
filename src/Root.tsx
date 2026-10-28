@@ -21,10 +21,18 @@ const calculateMetadata: CalculateMetadataFunction<EditProps> = async () => {
   if (!job) {
     return { durationInFrames: 90, fps: 30, width: 1080, height: 1920, props: { job: null, lines: [], cards: [] } };
   }
-  const [{ lines }, { cards }] = await Promise.all([
+  const [{ lines }, { cards: rawCards }] = await Promise.all([
     fetchJson<{ lines: Line[] }>("subtitles.json", { lines: [] }),
     fetchJson<{ cards: Card[] }>("cards.json", { cards: [] }),
   ]);
+  // 圖片卡的 PNG 可能還沒產出：標記起來，畫面上改顯示佔位框
+  const cards = await Promise.all(
+    rawCards.map(async (card) => {
+      if (card.type !== "image") return card;
+      const res = await fetch(staticFile(card.src), { method: "HEAD", cache: "no-store" }).catch(() => null);
+      return { ...card, missing: !res?.ok };
+    }),
+  );
   return {
     durationInFrames: job.durationInFrames,
     fps: job.fps,

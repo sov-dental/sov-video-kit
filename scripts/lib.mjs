@@ -93,6 +93,13 @@ export const resolveJob = (nameOrPath) => {
 export const readJson = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
 export const writeJson = (p, data) => fs.writeFileSync(p, JSON.stringify(data, null, 2) + "\n", "utf8");
 
+/** cards.json 裡還沒放檔案的圖片卡 */
+export const missingImages = (jobDir) => {
+  const file = path.join(jobDir, "cards.json");
+  if (!fs.existsSync(file)) return [];
+  return readJson(file).cards.filter((c) => c.type === "image" && !fs.existsSync(path.join(jobDir, c.src)));
+};
+
 export const whisperExe = () => {
   const v = config.whisper.version;
   const name = os.platform() === "win32" ? "whisper-cli.exe" : "whisper-cli";

@@ -293,6 +293,7 @@ writeJson(P("job.json"), {
 });
 writeJson(P("subtitles.json"), { lines });
 if (!fs.existsSync(P("cards.json"))) writeJson(P("cards.json"), { cards: [] });
+fs.mkdirSync(P("assets"), { recursive: true }); // 圖片卡的透明 PNG 放這裡
 fs.writeFileSync(
   P("transcript.txt"),
   lines.map((l, i) => `${String(i).padStart(3, "0")}  ${fmtTime(l.start)}–${fmtTime(l.end)}  ${l.zh}`).join("\n") + "\n",

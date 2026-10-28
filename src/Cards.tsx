@@ -1,5 +1,18 @@
-import React from "react";
-import { AbsoluteFill, Easing, interpolate, Sequence, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import React, { useEffect, useState } from "react";
+import {
+  AbsoluteFill,
+  cancelRender,
+  continueRender,
+  delayRender,
+  Easing,
+  Img,
+  interpolate,
+  Sequence,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { FONT_STACK } from "./font";
 import type { Card, Theme } from "./types";
 
@@ -41,6 +54,157 @@ const Panel: React.FC<{ children: React.ReactNode; bg: string; u: number; style?
     {children}
   </div>
 );
+
+/**
+ * 裁掉透明邊：nano-banana 字卡模式輸出的是整張 9:16 畫布，元素只佔中間一塊，
+ * 不裁的話 size 會被大片透明區吃掉。
+ */
+const useTrimmedImage = (src: string) => {
+  const [url, setUrl] = useState<string | null>(null);
+  const [handle] = useState(() => delayRender(`裁切透明邊：${src}`));
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const { naturalWidth: w, naturalHeight: h } = img;
+      // 縮小掃描就夠找邊界
+      const k = Math.min(1, 400 / Math.max(w, h));
+      const sw = Math.max(1, Math.round(w * k));
+      const sh = Math.max(1, Math.round(h * k));
+      const scan = document.createElement("canvas");
+      scan.width = sw;
+      scan.height = sh;
+      const sctx = scan.getContext("2d")!;
+      sctx.drawImage(img, 0, 0, sw, sh);
+      const { data } = sctx.getImageData(0, 0, sw, sh);
+      let x0 = sw, y0 = sh, x1 = -1, y1 = -1;
+      for (let y = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++) {
+          if (data[(y * sw + x) * 4 + 3] > 16) {
+            if (x < x0) x0 = x;
+            if (x > x1) x1 = x;
+            if (y < y0) y0 = y;
+            if (y > y1) y1 = y;
+          }
+        }
+      }
+      if (x1 < 0) {
+        setUrl(img.src);
+      } else {
+        // 換回原圖座標，四周多留 1 個掃描像素
+        const cx = Math.max(0, Math.floor((x0 - 1) / k));
+        const cy = Math.max(0, Math.floor((y0 - 1) / k));
+        const cw = Math.min(w, Math.ceil((x1 + 2) / k)) - cx;
+        const ch = Math.min(h, Math.ceil((y1 + 2) / k)) - cy;
+        const out = document.createElement("canvas");
+        out.width = cw;
+        out.height = ch;
+        out.getContext("2d")!.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
+        setUrl(out.toDataURL("image/png"));
+      }
+      continueRender(handle);
+    };
+    img.onerror = () => cancelRender(new Error(`讀不到圖片：${src}`));
+    img.src = staticFile(src);
+  }, [src, handle]);
+  return url;
+};
+
+const ImageCard: React.FC<{
+  card: Extract<Card, { type: "image" }>;
+  theme: Theme;
+  durationInFrames: number;
+}> = ({ card, theme, durationInFrames }) => {
+  const { u, vertical, width, height } = useUnit();
+  const { enter, exit, frame, fps } = useEnterExit(durationInFrames);
+  const box = Math.min(width, height) * (card.size ?? 0.5);
+  const align = card.align ?? (vertical ? "center" : "left");
+  // 彈入時微微旋轉，停留時上下浮動
+  const float = Math.sin((frame / fps) * Math.PI * 0.8) * 8 * u;
+  const wrap: React.CSSProperties = {
+    transform: `translateY(${float}px) scale(${interpolate(enter, [0, 1], [0.6, 1])}) rotate(${interpolate(enter, [0, 1], [-6, 0])}deg)`,
+    opacity: Math.min(enter, exit),
+    fontFamily: FONT_STACK,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center",
+    gap: 12 * u,
+    maxWidth: width * 0.88,
+  };
+  const caption = card.caption ? (
+    <div
+      style={{
+        background: theme.primary,
+        color: "#fff",
+        fontSize: (vertical ? 44 : 38) * u,
+        fontWeight: 900,
+        padding: `${10 * u}px ${28 * u}px`,
+        borderRadius: 999,
+        boxShadow: `0 ${10 * u}px ${30 * u}px rgba(0,0,0,0.25)`,
+        textAlign: "center",
+      }}
+    >
+      {card.caption}
+      {card.en ? <div style={{ color: theme.light, fontSize: 26 * u, fontWeight: 500 }}>{card.en}</div> : null}
+    </div>
+  ) : null;
+
+  if (card.missing) {
+    return (
+      <div style={wrap}>
+        <div
+          style={{
+            width: box,
+            height: box,
+            border: `${5 * u}px dashed ${theme.highlight}`,
+            borderRadius: 24 * u,
+            background: "rgba(0,0,0,0.45)",
+            color: "#fff",
+            padding: 24 * u,
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 12 * u,
+            fontSize: 26 * u,
+            lineHeight: 1.35,
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ color: theme.highlight, fontWeight: 900, fontSize: 32 * u }}>待放圖</div>
+          <div style={{ wordBreak: "break-all" }}>{card.src}</div>
+          {card.prompt ? <div style={{ opacity: 0.8, fontSize: 22 * u }}>{card.prompt}</div> : null}
+        </div>
+        {caption}
+      </div>
+    );
+  }
+  return <TrimmedImage src={card.src} box={box} u={u} wrap={wrap} caption={caption} />;
+};
+
+const TrimmedImage: React.FC<{
+  src: string;
+  box: number;
+  u: number;
+  wrap: React.CSSProperties;
+  caption: React.ReactNode;
+}> = ({ src, box, u, wrap, caption }) => {
+  const url = useTrimmedImage(src);
+  if (!url) return null;
+  return (
+    <div style={wrap}>
+      <Img
+        src={url}
+        style={{
+          maxWidth: box,
+          maxHeight: box,
+          objectFit: "contain",
+          filter: `drop-shadow(0 ${12 * u}px ${24 * u}px rgba(0,0,0,0.35))`,
+        }}
+      />
+      {caption}
+    </div>
+  );
+};
 
 const CardBody: React.FC<{ card: Card; theme: Theme; durationInFrames: number }> = ({ card, theme, durationInFrames }) => {
   const { u, vertical, width } = useUnit();
@@ -198,6 +362,9 @@ const CardBody: React.FC<{ card: Card; theme: Theme; durationInFrames: number }>
         </div>
       );
 
+    case "image":
+      return <ImageCard card={card} theme={theme} durationInFrames={durationInFrames} />;
+
     case "cta": {
       const pulse = 1 + 0.03 * Math.sin((frame / fps) * Math.PI * 2);
       return (
@@ -242,7 +409,7 @@ export const Cards: React.FC<{ cards: Card[]; theme: Theme }> = ({ cards, theme 
         const from = Math.round(card.at * fps);
         const durationInFrames = Math.max(15, Math.round((card.duration ?? DEFAULT_DURATION) * fps));
         return (
-          <Sequence key={i} from={from} durationInFrames={durationInFrames} name={`${card.type}: ${"title" in card ? card.title : card.type}`}>
+          <Sequence key={i} from={from} durationInFrames={durationInFrames} name={`${card.type}: ${"title" in card ? card.title : card.type === "image" ? card.src : card.type}`}>
             <Placement card={card}>
               <CardBody card={card} theme={theme} durationInFrames={durationInFrames} />
             </Placement>

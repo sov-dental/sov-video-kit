@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { bundle } from "@remotion/bundler";
 import { renderStill, selectComposition } from "@remotion/renderer";
-import { KIT_DIR, fail, log, readJson, resolveJob } from "./lib.mjs";
+import { KIT_DIR, fail, log, missingImages, readJson, resolveJob } from "./lib.mjs";
 
 const args = process.argv.slice(2);
 const isNum = (s) => /^\d+(\.\d+)?$/.test(s);
@@ -20,6 +20,8 @@ if (!times.length) {
     times = lines.filter((_, i) => i % Math.max(1, Math.floor(lines.length / 4)) === 0).map((l) => (l.start + l.end) / 2);
   }
 }
+
+for (const c of missingImages(jobDir)) log(`待放圖（先用佔位框截圖）：${c.src}`);
 
 try {
   const outDir = path.join(jobDir, "stills");

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
-import { KIT_DIR, fail, log, parseArgs, readJson, resolveJob, writeJson } from "./lib.mjs";
+import { KIT_DIR, fail, log, missingImages, parseArgs, readJson, resolveJob, writeJson } from "./lib.mjs";
 
 const { positional, flags } = parseArgs(process.argv.slice(2));
 const jobDir = resolveJob(positional[0]);
@@ -27,6 +27,14 @@ const writeSrt = (outBase) => {
     .join("\n");
   fs.writeFileSync(`${outBase}.srt`, srt, "utf8");
 };
+
+const missing = missingImages(jobDir);
+if (missing.length && !draft) {
+  fail(
+    `還有 ${missing.length} 張圖片卡沒放圖（草稿可以先用 --draft 輸出，會顯示佔位框）：\n` +
+      missing.map((c) => `  ${c.src}${c.prompt ? `\n    提示詞：${c.prompt}` : ""}`).join("\n"),
+  );
+}
 
 try {
   const outDir = path.join(jobDir, "output");

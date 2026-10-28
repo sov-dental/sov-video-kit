@@ -4,7 +4,9 @@
 
 1. **剪掉空白**（講話中間的停頓）
 2. **中英雙語字幕**（本機語音辨識＋Claude 校對與翻譯）
-3. **動態圖卡**（開場標題、重點、數字、術語解釋、結尾邀約）
+3. **動態圖卡**（開場標題、重點、數字、術語解釋、插圖、結尾邀約）
+
+插圖用 [nano-banana](https://nano-banana-api-195z.onrender.com/) 的「字卡模式」產生透明 PNG，存進 `jobs/<名稱>/assets/`。Claude 會告訴你要產哪幾張、檔名和提示詞。
 
 輸出 MP4 和雙語 SRT。配色有 SOV、日不落兩組。
 
@@ -64,7 +66,7 @@ git clone https://github.com/sov-dental/sov-video-kit.git
 | （編輯 `jobs/ep01/subtitles.json`、`cards.json`） | 校字、翻譯、規劃圖卡（Claude 做） |
 | `npm run still -- ep01` | 截圖檢查圖卡位置 |
 | `npm run studio -- ep01` | 開瀏覽器預覽 |
-| `npm run render -- ep01` | 輸出 `jobs/ep01/output/ep01.mp4`＋`.srt` |
+| `npm run render -- ep01` | 輸出 `jobs/ep01/output/ep01.mp4`＋`.srt`（插圖沒放齊會擋下；`--draft` 可先用佔位框輸出） |
 
 `prep` 的選項：`--theme sunlight`（日不落配色）、`--no-cut`（不剪空白）、`--min-silence 0.7`（只剪更長的停頓）、`--threshold -45`（收音小聲時用）、`--force`（覆蓋同名 job）。
 
