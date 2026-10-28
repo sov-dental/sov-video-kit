@@ -36,7 +36,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/sov-dental/sov-video-kit
 irm https://raw.githubusercontent.com/sov-dental/sov-video-kit/main/install/windows.ps1 -OutFile $env:TEMP\sov-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\sov-install.ps1
 ```
 
-工具包會放在 `桌面\sov-video-kit`。
+工具包會放在 `桌面\sov-video-kit`。第一次安裝 Node.js、Git 時，Windows 可能跳出「是否允許變更」，按「是」。
 
 ### 已經有 Node.js 的話（手動安裝）
 

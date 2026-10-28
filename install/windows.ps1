@@ -29,10 +29,12 @@ try {
       RefreshPath
     }
   }
-  # whisper.cpp 需要 VC++ 執行環境
-  Step '確認 VC++ 執行環境'
-  winget install --id Microsoft.VCRedist.2015+.x64 -e --silent --accept-source-agreements --accept-package-agreements | Out-Null
-  RefreshPath
+  # whisper.cpp 需要 VC++ 執行環境；已經有就不要重裝（重裝會跳系統管理員確認視窗）
+  $vc = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64' -ErrorAction SilentlyContinue
+  if (-not ($vc -and $vc.Installed -eq 1)) {
+    Step '安裝 VC++ 執行環境（若跳出「是否允許變更」請按「是」）'
+    winget install --id Microsoft.VCRedist.2015+.x64 -e --silent --accept-source-agreements --accept-package-agreements
+  }
 
   # 2. 下載或更新工具包
   if (Test-Path (Join-Path $Dest '.git')) {
