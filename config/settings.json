@@ -1,0 +1,24 @@
+{
+  "whisper": {
+    "version": "1.7.6",
+    "model": "large-v3-turbo",
+    "language": "zh",
+    "threads": 0
+  },
+  "silence": {
+    "threshold": "auto",
+    "minSilence": 0.45,
+    "padBefore": 0.12,
+    "padAfter": 0.18,
+    "minKeep": 0.25
+  },
+  "video": {
+    "fps": 30,
+    "crf": 18
+  },
+  "subtitles": {
+    "maxCharsVertical": 14,
+    "maxCharsHorizontal": 20
+  },
+  "theme": "sov"
+}
