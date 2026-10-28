@@ -32,7 +32,7 @@ if (exe) {
   const r = await run(exe, ["--help"]).catch(() => ({ code: 1 }));
   if (r.code === 0) ok(`whisper.cpp ${config.whisper.version}`);
   else no("whisper.cpp 無法執行", os.platform() === "win32" ? "安裝 Microsoft Visual C++ 可轉散發套件（x64）後再試" : "刪掉 .cache/whisper.cpp 後重跑 npm run setup");
-} else no("還沒安裝 whisper.cpp", "npm run setup");
+} else no("還沒安裝 whisper.cpp", os.platform() === "darwin" ? "brew install whisper.cpp 後再跑 npm run setup" : "npm run setup");
 
 const modelPath = path.join(MODELS_DIR, `ggml-${config.whisper.model}.bin`);
 const size = fs.existsSync(modelPath) ? fs.statSync(modelPath).size : 0;

@@ -26,7 +26,20 @@ const installWhisper = async () => {
   }
   fs.mkdirSync(CACHE_DIR, { recursive: true });
   if (os.platform() !== "win32") {
-    // macOS / Linux 需要從原始碼編譯
+    // 有 Homebrew 的 whisper.cpp 就直接用（Apple 晶片有 Metal 加速，也不用編譯）
+    const which = await run("which", ["whisper-cli"]).catch(() => ({ code: 1, stdout: "" }));
+    const brewBin = which.code === 0 ? which.stdout.trim() : "";
+    if (brewBin) {
+      const binDir = path.join(WHISPER_DIR, "build", "bin");
+      fs.rmSync(WHISPER_DIR, { recursive: true, force: true });
+      fs.mkdirSync(binDir, { recursive: true });
+      // 連到 brew 的固定路徑（不是 Cellar 實體路徑），brew upgrade 後仍有效
+      fs.symlinkSync(brewBin, path.join(binDir, "whisper-cli"));
+      log(`使用 Homebrew 的 whisper-cli：${brewBin}`);
+      return;
+    }
+    // 沒有的話從原始碼編譯
+    if (os.platform() === "darwin") log("建議先執行 brew install whisper.cpp（較快、免編譯）；以下改為從原始碼編譯");
     for (const [bin, hint] of [
       ["git", "請先安裝 git"],
       ["cmake", os.platform() === "darwin" ? "請先執行：xcode-select --install，再 brew install cmake" : "請先安裝 cmake 與 build-essential"],

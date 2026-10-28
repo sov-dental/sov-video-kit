@@ -36,7 +36,8 @@
     "studio": "node scripts/studio.mjs",
     "still": "node scripts/still.mjs",
     "render": "node scripts/render.mjs",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "update": "node scripts/update.mjs"
   },
   "allowScripts": {
     "esbuild": false

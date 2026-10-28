@@ -17,6 +17,10 @@ cd "{{KIT_DIR}}" && npm run doctor
 
 有 ✗ 就照提示修：通常是 `npm install` 再 `npm run setup`（會下載約 1.6GB 語音模型，要 5–20 分鐘，用背景執行）。全部 ✓ 才往下。
 
+使用者說「更新影片工具包」：執行 `npm run update`（拉最新版、補套件、更新 skill、跑環境檢查）。
+
+Mac 缺 Homebrew 或要輸入密碼的步驟，你無法代為執行：請使用者在「終端機」貼上 README「第一次安裝 → Mac」那一行，自己完成。
+
 ## 1. 剪空白＋語音辨識
 
 ```bash

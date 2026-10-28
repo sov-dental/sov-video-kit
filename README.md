@@ -8,36 +8,49 @@
 
 輸出 MP4 和雙語 SRT。配色有 SOV、日不落兩組。
 
-## 需要什麼
-
-| | Windows | Mac |
-|---|---|---|
-| Node.js 22 LTS 以上 | [nodejs.org](https://nodejs.org) | 同左 |
-| Claude Code | 桌面 App 或 CLI | 同左 |
-| 編譯工具 | 不用 | `xcode-select --install`，再 `brew install cmake` |
-| 硬碟空間 | 約 3GB（語音模型 1.6GB） | 同左 |
-
-不需要另外安裝 ffmpeg、Whisper、字型，都由工具包自己帶或自己下載。
-
 ## 第一次安裝（每台電腦做一次）
 
-把整個資料夾放到這台電腦上（位置隨意），在資料夾裡開終端機：
+事前只需要：**Claude Code**（桌面 App）、約 3GB 硬碟空間、網路。Node.js、Git、Whisper、ffmpeg、字型都由安裝程式處理。
+
+### Mac
+
+打開「終端機」（Launchpad 搜尋 Terminal），貼上這一行按 Enter：
 
 ```bash
-npm install
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/sov-dental/sov-video-kit/main/install/mac.command)"
 ```
+
+過程中會：
+1. 安裝 Homebrew，**會問一次 Mac 開機密碼**，輸入時畫面不會出現字，打完按 Enter。
+2. 安裝 Node.js、Git、Whisper。Apple 晶片可以用 GPU 加速。
+3. 把工具包下載到 `~/sov-video-kit`。
+4. 下載語音模型，約 1.6GB，需要 5–20 分鐘。
+
+最後出現「全部正常」就完成了。整個過程約 15–30 分鐘。
+
+### Windows
+
+在開始選單搜尋 PowerShell，打開後貼上：
 
 ```bash
-npm run setup
+irm https://raw.githubusercontent.com/sov-dental/sov-video-kit/main/install/windows.ps1 -OutFile $env:TEMP\sov-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\sov-install.ps1
 ```
+
+工具包會放在 `桌面\sov-video-kit`。
+
+### 已經有 Node.js 的話（手動安裝）
 
 ```bash
-npm run doctor
+git clone https://github.com/sov-dental/sov-video-kit.git
 ```
 
-`setup` 會下載 Whisper 和語音模型（5–20 分鐘），並把 Claude Code 的 skill 裝到 `~/.claude/skills/sov-video-edit`。`doctor` 全部打勾就完成了。
+接著在資料夾裡依序執行 `npm install`、`npm run setup`、`npm run doctor`。
 
 > 工具包搬到別的位置後，要再跑一次 `npm run setup -- --skill-only`，skill 才會指到新位置。
+
+## 更新
+
+在 Claude Code 裡說「更新影片工具包」，或在工具包資料夾執行 `npm run update`。也可以直接重跑上面的一行安裝指令。
 
 ## 怎麼用
 
